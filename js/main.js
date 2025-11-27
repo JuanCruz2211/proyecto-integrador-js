@@ -1,12 +1,16 @@
-//1. variables globales importantes
+//variables globales importantes
 let actividades = [];
 let filtroActual = 'todas'; 
 let textoBusquedaActual = '';
 let ordenarPor = 'fecha';
+
+//variable para saber si estoy editando alguna actividad (guardo el ID)
 let idActividadEditando = null;
 
-//2. funciones basicas de ayuda
+//-- funcion para guardar y leer del localStorage --
+
 function cargarActividades(){
+    //intento leer si hay algo guardado
     const almacenado = localStorage.getItem('actividadesData');
     if (almacenado) {
         actividades = JSON.parse(almacenado);
@@ -18,12 +22,14 @@ function guardarActividades(){
 }
 
 function generarIdUnico(){
+    //uso la fecha actual + un nro random para que no se repita el ID
     return Date.now() + Math.floor(Math.random() * 99);
 }
 
-//3. logica de actualizacion visual
+//-- logica de actualizacion visual y estadisticas --
 
 function actualizarEstadisticas(){
+    //elementos del DOM donde voy a mostrar los nros
     const estadisticaTotal = document.getElementById('statTotal');
     const estadisticaCompletadas = document.getElementById('statCompleted');
     const estadisticaPendientes = document.getElementById('statPending');
@@ -32,17 +38,20 @@ function actualizarEstadisticas(){
     let sumaTotalHoras = 0;
     let contadorCompletadas = 0;
 
+    //recorro el array para contar
     for(const actividad of actividades){
         if (actividad.isCompleted){
             contadorCompletadas++;
         }
         
+        //sumo las horas solo si son nros validos
         const tiempo = parseFloat(actividad.estimatedTime);
         if(!isNaN(tiempo) && tiempo > 0){
             sumaTotalHoras += tiempo;
         }
     }
 
+    //actualizo el HTML
     estadisticaTotal.textContent = actividades.length;
     estadisticaCompletadas.textContent = contadorCompletadas;
     estadisticaPendientes.textContent = actividades.length - contadorCompletadas;
@@ -52,16 +61,19 @@ function actualizarEstadisticas(){
 function renderizarTablaActividades(){
     let listaFiltrada = [];
 
+    //1. aplico los filtros (estado y busqueda)
     for(const actividad of actividades){
         let pasaFiltroEstado = true;
         let pasaFiltroBusqueda = true;
 
+        //filtro por botones de estado
         if(filtroActual === 'pendientes' && actividad.isCompleted){
             pasaFiltroEstado = false;
         }else if(filtroActual === 'completadas' && !actividad.isCompleted){
             pasaFiltroEstado = false;
         }
 
+        //filtro por buscador (input)
         if(textoBusquedaActual.length > 0){
             const busqueda = textoBusquedaActual.toLowerCase();
             const title = actividad.title.toLowerCase();
@@ -77,6 +89,7 @@ function renderizarTablaActividades(){
         }
     }
 
+    //2. ordeno la lista segun lo que elije el usuario
     listaFiltrada.sort((a, b) =>{
         if(ordenarPor === 'fecha'){
             if (!a.deadline) return 1;
@@ -93,11 +106,12 @@ function renderizarTablaActividades(){
         return 0;
     });
 
+    //3. dibujo en el HTML
     const cuerpoTablaActividades = document.getElementById('activityTableBody');
     const plantillaFila = document.getElementById('rowTemplate');
     const estadoVacio = document.getElementById('emptyState');
 
-    cuerpoTablaActividades.innerHTML = '';
+    cuerpoTablaActividades.innerHTML = ''; //limpio la tabla antes de dibujar
 
     if(listaFiltrada.length === 0){
         estadoVacio.classList.remove('hidden');
@@ -105,11 +119,13 @@ function renderizarTablaActividades(){
         estadoVacio.classList.add('hidden');
 
         for(const actividad of listaFiltrada){
+            //clono el template
             const clone = plantillaFila.content.cloneNode(true);
             const fila = clone.querySelector('tr');
             
             fila.dataset.id = actividad.id;
             
+            //agrego clases visuales
             fila.classList.add(`priority-${actividad.priority}`);
             if(actividad.isImportant){
                 fila.classList.add('is-important');
@@ -121,6 +137,7 @@ function renderizarTablaActividades(){
             const checkbox = fila.querySelector('.row-complete');
             checkbox.checked = actividad.isCompleted;
 
+            //relleno los datos
             fila.querySelector('.row-title').textContent = actividad.title;
             fila.querySelector('.row-subject').textContent = actividad.subject;
             fila.querySelector('.row-type').textContent = actividad.type;
@@ -134,16 +151,18 @@ function renderizarTablaActividades(){
             cuerpoTablaActividades.appendChild(fila);
         }
     }
+    //al final actualizo los contadores
     actualizarEstadisticas();
 }
 
-//4. manejadores de eventos de formulario y tabla
+//-- manejo del formulario (agregar) --
 
 function manejarAgregarActividad(e){
-    e.preventDefault(); 
+    e.preventDefault();//para que no recargue la pag
 
     const formularioActividad = document.getElementById('activityForm');
 
+    //leo los valores
     const title = formularioActividad.title.value.trim();
     const subject = formularioActividad.subject.value.trim();
     const type = formularioActividad.type.value;
@@ -154,6 +173,7 @@ function manejarAgregarActividad(e){
     
     const priority = formularioActividad.querySelector('input[name="priority"]:checked').value;
     
+    //validaciones simples
     if(title === ''){
         alert('ERROR: El titulo es obligatorio. Por favor, escriba algo'); 
         formularioActividad.title.focus();
@@ -167,6 +187,7 @@ function manejarAgregarActividad(e){
         return;
     }
 
+    //creo el objeto
     const nuevaActividad ={
         id: generarIdUnico(),
         title: title,
@@ -187,6 +208,8 @@ function manejarAgregarActividad(e){
     formularioActividad.reset();
 }
 
+//-- eventos en la tabla (delegacion) --
+
 function manejarInteraccionesTabla(e){
     const target = e.target;
     const fila = target.closest('tr');
@@ -198,6 +221,7 @@ function manejarInteraccionesTabla(e){
     if(indice === -1) return; 
     const actividad = actividades[indice];
 
+    //boton eliminar
     if(target.classList.contains('btn-delete')){
         console.warn(`[Planificador] eliminando actividad: ${idActividad}`); 
         
@@ -207,6 +231,7 @@ function manejarInteraccionesTabla(e){
         return;
     }
 
+    //checkbox completar
     if(target.classList.contains('row-complete') && target.type === 'checkbox'){
         actividad.isCompleted = target.checked;
         guardarActividades();
@@ -225,13 +250,14 @@ function manejarInteraccionesTabla(e){
         return;
     }
 
+    //boton editar
     if(target.classList.contains('btn-edit')){
         abrirModalEdicion(idActividad);
         return;
     }
 }
 
-//5. manejadores de evento de filtros, orden y busqueda
+//-- filtros y buscadores --
 
 function manejarCambioFiltro(e){
     const target = e.target;
@@ -240,6 +266,7 @@ function manejarCambioFiltro(e){
     if(nuevoFiltro && nuevoFiltro !== filtroActual){
         filtroActual = nuevoFiltro;
         
+        //cambio la clase activa de los botones
         const botonesFiltro = document.querySelectorAll('.btn-filter');
         botonesFiltro.forEach(btn => btn.classList.remove('is-active'));
         target.classList.add('is-active');
@@ -258,7 +285,7 @@ function manejarCambioOrden(e){
     renderizarTablaActividades(); 
 }
 
-//6. logica modal de edicion
+//-- modal de edicion --
 
 function abrirModalEdicion(id){
     const actividad = actividades.find(a => a.id === id);
@@ -272,6 +299,7 @@ function abrirModalEdicion(id){
     const editarFechaLimite = document.getElementById('editDeadline');
     const modalEdicion = document.getElementById('editModal');
 
+    //relleno el form del modal con los datos actuales
     editarTitulo.value = actividad.title;
     editarMateria.value = actividad.subject;
     editarTipo.value = actividad.type;
@@ -304,6 +332,7 @@ function manejarGuardarEdicion(e){
     const editarTipo = document.getElementById('editType');
     const editarFechaLimite = document.getElementById('editDeadline');
 
+    //actualizo el objeto
     actividad.title = editarTitulo.value.trim();
     actividad.subject = editarMateria.value.trim();
     actividad.type = editarTipo.value;
@@ -314,7 +343,7 @@ function manejarGuardarEdicion(e){
     renderizarTablaActividades();
 }
 
-//7. logica de tema claro/oscuro
+//-- tema claro/oscuro --
 
 function manejarAlternarTema(){
     const body = document.body;
@@ -332,6 +361,8 @@ function inicializarTema() {
     } 
 }
 
+// pequenio FIX: esta funcion la agregue porque el CSS original me traia problemas con el modo claro
+//y no se veian las letras. Agrega estilos extras al <head>
 function inyectarEstilosCorreccionTema() {
     const estilo = document.createElement('style');
     estilo.textContent = `
@@ -379,7 +410,7 @@ function inyectarEstilosCorreccionTema() {
     document.head.appendChild(estilo);
 }
 
-//8. funcion de inicio
+//-- inicio de la aplicacion --
 
 function iniciarApp(){
     cargarActividades();
@@ -389,6 +420,7 @@ function iniciarApp(){
     
     renderizarTablaActividades();
 
+    //referencias al DOM
     const formularioActividad = document.getElementById('activityForm');
     const cuerpoTablaActividades = document.getElementById('activityTableBody');
     const botonesFiltro = document.querySelectorAll('.btn-filter');
@@ -400,6 +432,7 @@ function iniciarApp(){
     const botonAlternarTema = document.getElementById('btnToggleTheme');
     const modalEdicion = document.getElementById('editModal');
 
+    //event listeners
     formularioActividad.addEventListener('submit', manejarAgregarActividad);
     cuerpoTablaActividades.addEventListener('click', manejarInteraccionesTabla);
     cuerpoTablaActividades.addEventListener('change', manejarInteraccionesTabla); 
