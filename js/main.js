@@ -257,3 +257,59 @@ function manejarCambioOrden(e){
     ordenarPor = e.target.value;
     renderizarTablaActividades(); 
 }
+
+//6. logica modal de edicion
+
+function abrirModalEdicion(id){
+    const actividad = actividades.find(a => a.id === id);
+    if (!actividad) return;
+
+    idActividadEditando = id;
+    
+    const editarTitulo = document.getElementById('editTitle');
+    const editarMateria = document.getElementById('editSubject');
+    const editarTipo = document.getElementById('editType');
+    const editarFechaLimite = document.getElementById('editDeadline');
+    const modalEdicion = document.getElementById('editModal');
+
+    editarTitulo.value = actividad.title;
+    editarMateria.value = actividad.subject;
+    editarTipo.value = actividad.type;
+    editarFechaLimite.value = actividad.deadline;
+
+    modalEdicion.classList.add('is-open');
+    modalEdicion.setAttribute('aria-hidden', 'false');
+}
+
+function cerrarModalEdicion(){
+    const modalEdicion = document.getElementById('editModal');
+    const formularioEdicion = document.getElementById('editForm');
+    
+    modalEdicion.classList.remove('is-open');
+    modalEdicion.setAttribute('aria-hidden', 'true');
+    idActividadEditando = null;
+    formularioEdicion.reset();
+}
+
+function manejarGuardarEdicion(e){
+    e.preventDefault();
+
+    if(idActividadEditando === null) return;
+
+    const actividad = actividades.find(a => a.id === idActividadEditando);
+    if(!actividad) return;
+
+    const editarTitulo = document.getElementById('editTitle');
+    const editarMateria = document.getElementById('editSubject');
+    const editarTipo = document.getElementById('editType');
+    const editarFechaLimite = document.getElementById('editDeadline');
+
+    actividad.title = editarTitulo.value.trim();
+    actividad.subject = editarMateria.value.trim();
+    actividad.type = editarTipo.value;
+    actividad.deadline = editarFechaLimite.value;
+
+    guardarActividades();
+    cerrarModalEdicion();
+    renderizarTablaActividades();
+}
