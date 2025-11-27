@@ -313,3 +313,68 @@ function manejarGuardarEdicion(e){
     cerrarModalEdicion();
     renderizarTablaActividades();
 }
+
+//7. logica de tema claro/oscuro
+
+function manejarAlternarTema(){
+    const body = document.body;
+    
+    const esClaroAhora = body.classList.toggle('theme-light');
+    
+    localStorage.setItem('themePreference', esClaroAhora ? 'light' : 'dark');
+}
+
+function inicializarTema() {
+    const temaGuardado = localStorage.getItem('themePreference');
+    const body = document.body;
+    if(temaGuardado === 'light') {
+        body.classList.add('theme-light');
+    } 
+}
+
+function inyectarEstilosCorreccionTema() {
+    const estilo = document.createElement('style');
+    estilo.textContent = `
+        body.theme-light {
+            background-image: none !important;
+            background-color: var(--bg) !important;
+        }
+        
+        body.theme-light .panel,
+        body.theme-light .header,
+        body.theme-light .stat-card,
+        body.theme-light .toolbar,
+        body.theme-light .modal__content,
+        body.theme-light input,
+        body.theme-light select,
+        body.theme-light textarea {
+            background: var(--bg-soft) !important;
+            color: var(--fg) !important;
+            border-color: var(--border) !important;
+        }
+
+        body.theme-light .table-wrapper,
+        body.theme-light thead {
+            background: var(--bg-soft) !important;
+            color: var(--fg) !important;
+            border-color: var(--border) !important;
+        }
+
+        body.theme-light tbody tr:nth-child(even) {
+            background: var(--bg-softer) !important;
+        }
+        body.theme-light tbody tr:hover {
+            background: #ffffff !important;
+        }
+        body.theme-light th, 
+        body.theme-light td {
+            border-bottom-color: var(--border) !important;
+        }
+        
+        body.theme-light .chip {
+            background: #e5e7eb !important;
+            border-color: #d1d5db !important;
+        }
+    `;
+    document.head.appendChild(estilo);
+}
