@@ -136,3 +136,53 @@ function renderizarTablaActividades(){
     }
     actualizarEstadisticas();
 }
+
+//4. manejadores de eventos de formulario y tabla
+
+function manejarAgregarActividad(e){
+    e.preventDefault(); 
+
+    const formularioActividad = document.getElementById('activityForm');
+
+    const title = formularioActividad.title.value.trim();
+    const subject = formularioActividad.subject.value.trim();
+    const type = formularioActividad.type.value;
+    const estimatedTimeValue = formularioActividad.estimatedTime.value;
+    const deadline = formularioActividad.deadline.value;
+    const notes = formularioActividad.notes.value.trim();
+    const isImportant = formularioActividad.isImportant.checked;
+    
+    const priority = formularioActividad.querySelector('input[name="priority"]:checked').value;
+    
+    if(title === ''){
+        alert('ERROR: El titulo es obligatorio. Por favor, escriba algo'); 
+        formularioActividad.title.focus();
+        return;
+    }
+    
+    const time = estimatedTimeValue ? parseFloat(estimatedTimeValue) : null;
+    if(time !== null && (isNaN(time) || time < 0)){
+        alert('ERROR: El tiempo estimado debe ser un nro positivo (ej: 1.5)');
+        formularioActividad.estimatedTime.focus();
+        return;
+    }
+
+    const nuevaActividad ={
+        id: generarIdUnico(),
+        title: title,
+        subject: subject,
+        type: type,
+        priority: priority,
+        deadline: deadline,
+        estimatedTime: time,
+        notes: notes,
+        isImportant: isImportant,
+        isCompleted: false,
+    };
+
+    actividades.push(nuevaActividad);
+    guardarActividades();
+    renderizarTablaActividades();
+    
+    formularioActividad.reset();
+}
