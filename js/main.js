@@ -230,3 +230,30 @@ function manejarInteraccionesTabla(e){
         return;
     }
 }
+
+//5. manejadores de evento de filtros, orden y busqueda
+
+function manejarCambioFiltro(e){
+    const target = e.target;
+    const nuevoFiltro = target.dataset.filter;
+
+    if(nuevoFiltro && nuevoFiltro !== filtroActual){
+        filtroActual = nuevoFiltro;
+        
+        const botonesFiltro = document.querySelectorAll('.btn-filter');
+        botonesFiltro.forEach(btn => btn.classList.remove('is-active'));
+        target.classList.add('is-active');
+
+        renderizarTablaActividades();
+    }
+}
+
+function manejarInputBusqueda(e){
+    textoBusquedaActual = e.target.value.trim();
+    renderizarTablaActividades(); 
+}
+
+function manejarCambioOrden(e){
+    ordenarPor = e.target.value;
+    renderizarTablaActividades(); 
+}
