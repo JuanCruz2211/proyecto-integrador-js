@@ -361,7 +361,7 @@ function inicializarTema() {
     } 
 }
 
-// pequenio FIX: esta funcion la agregue porque el CSS original me traia problemas con el modo claro
+// pequeño FIX: esta funcion la agregue porque el CSS original me traia problemas con el modo claro
 //y no se veian las letras. Agrega estilos extras al <head>
 function inyectarEstilosCorreccionTema() {
     const estilo = document.createElement('style');
