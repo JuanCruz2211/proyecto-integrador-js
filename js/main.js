@@ -378,3 +378,49 @@ function inyectarEstilosCorreccionTema() {
     `;
     document.head.appendChild(estilo);
 }
+
+//8. funcion de inicio
+
+function iniciarApp(){
+    cargarActividades();
+    inicializarTema();
+    
+    inyectarEstilosCorreccionTema();
+    
+    renderizarTablaActividades();
+
+    const formularioActividad = document.getElementById('activityForm');
+    const cuerpoTablaActividades = document.getElementById('activityTableBody');
+    const botonesFiltro = document.querySelectorAll('.btn-filter');
+    const campoBusqueda = document.getElementById('search');
+    const selectorOrdenar = document.getElementById('sort');
+    const formularioEdicion = document.getElementById('editForm');
+    const botonCerrarModal = document.getElementById('btnCloseModal');
+    const botonCancelarEdicion = document.getElementById('btnCancelEdit');
+    const botonAlternarTema = document.getElementById('btnToggleTheme');
+    const modalEdicion = document.getElementById('editModal');
+
+    formularioActividad.addEventListener('submit', manejarAgregarActividad);
+    cuerpoTablaActividades.addEventListener('click', manejarInteraccionesTabla);
+    cuerpoTablaActividades.addEventListener('change', manejarInteraccionesTabla); 
+
+    botonesFiltro.forEach(btn => {
+        btn.addEventListener('click', manejarCambioFiltro);
+    });
+    campoBusqueda.addEventListener('input', manejarInputBusqueda);
+    selectorOrdenar.addEventListener('change', manejarCambioOrden);
+
+    formularioEdicion.addEventListener('submit', manejarGuardarEdicion);
+    botonCerrarModal.addEventListener('click', cerrarModalEdicion);
+    botonCancelarEdicion.addEventListener('click', cerrarModalEdicion);
+    
+    modalEdicion.addEventListener('click', (e) => {
+        if(e.target.classList.contains('modal__backdrop')){
+            cerrarModalEdicion();
+        }
+    });
+    
+    botonAlternarTema.addEventListener('click', manejarAlternarTema);
+}
+
+iniciarApp();
