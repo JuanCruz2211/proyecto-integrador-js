@@ -186,3 +186,47 @@ function manejarAgregarActividad(e){
     
     formularioActividad.reset();
 }
+
+function manejarInteraccionesTabla(e){
+    const target = e.target;
+    const fila = target.closest('tr');
+    if(!fila) return;
+
+    const idActividad = parseInt(fila.dataset.id);
+    const indice = actividades.findIndex(a => a.id === idActividad);
+    
+    if(indice === -1) return; 
+    const actividad = actividades[indice];
+
+    if(target.classList.contains('btn-delete')){
+        console.warn(`[Planificador] eliminando actividad: ${idActividad}`); 
+        
+        actividades.splice(indice, 1);
+        guardarActividades();
+        renderizarTablaActividades();
+        return;
+    }
+
+    if(target.classList.contains('row-complete') && target.type === 'checkbox'){
+        actividad.isCompleted = target.checked;
+        guardarActividades();
+
+        if(actividad.isCompleted){
+            fila.classList.add('is-completed');
+        } else{
+            fila.classList.remove('is-completed');
+        }
+
+        if(filtroActual !== 'todas') {
+            renderizarTablaActividades();
+        } else {
+            actualizarEstadisticas();
+        }
+        return;
+    }
+
+    if(target.classList.contains('btn-edit')){
+        abrirModalEdicion(idActividad);
+        return;
+    }
+}
